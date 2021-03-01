@@ -37,7 +37,29 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
+    'rest_framework',
+    'django_filters',
+
+    'geoapp',
+
+    'location_field.apps.DefaultConfig',
 ]
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'geoapp.pagination_simple.LimitOffsetPaginationSimple',
+    'PAGE_SIZE': 50,
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+}
+
+LOCATION_FIELD = {
+    'map.provider': 'openstreetmap',
+    'provider.openstreetmap.max_zoom': 18,
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -75,8 +97,12 @@ WSGI_APPLICATION = 'geoapp.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': os.getenv('POSTGRES_DB', 'geoapp'),
+        'HOST': os.getenv('POSTGRES_HOST', '127.0.0.1'),
+        'USER': os.getenv('POSTGRES_USER', 'geoapp'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'geoapp'),
+        'PORT': os.getenv('POSTGRES_PORT', 5432),
     }
 }
 
@@ -116,5 +142,12 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
-
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+)
